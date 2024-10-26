@@ -63,6 +63,10 @@ void ATPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 			EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &ThisClass::CrouchInput);
 			EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &ThisClass::UnCrouchInput);
 		}
+		if(IsValid(EquipAction))
+		{
+			EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Started, this, &ThisClass::EquipInput);
+		}
 	}
 }
 
@@ -85,6 +89,15 @@ void ATPSCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME_CONDITION(ThisClass, OverlappingWeapon, COND_OwnerOnly);
+}
+
+void ATPSCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	if(CombatComponent)
+	{
+		CombatComponent->TPSCharacter = this;
+	}
 }
 
 void ATPSCharacter::SetOverheadPlayerName()
@@ -153,6 +166,7 @@ void ATPSCharacter::UnCrouchInput(const FInputActionValue& Value)
 
 void ATPSCharacter::EquipInput(const FInputActionValue& Value)
 {
+	Server_EquipWeapon();
 }
 
 #pragma endregion
@@ -188,6 +202,14 @@ void ATPSCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 		{
 			OverlappingWeapon->ShowPickUpWidget(true);
 		}
+	}
+}
+
+void ATPSCharacter::Server_EquipWeapon_Implementation()
+{
+	if(CombatComponent)
+	{
+		CombatComponent->EquipWeapon(OverlappingWeapon);
 	}
 }
 

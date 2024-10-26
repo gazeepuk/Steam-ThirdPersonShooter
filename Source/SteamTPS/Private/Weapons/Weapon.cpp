@@ -6,6 +6,7 @@
 #include "Characters/TPSCharacter.h"
 #include "Components/SphereComponent.h"
 #include "Components/WidgetComponent.h"
+#include "Net/UnrealNetwork.h"
 
 AWeapon::AWeapon()
 {
@@ -39,6 +40,24 @@ void AWeapon::ShowPickUpWidget(const bool bShowWidget) const
 	}
 }
 
+void AWeapon::SetWeaponState(const EWeaponState NewWeaponState)
+{
+	WeaponState = NewWeaponState;
+	switch (WeaponState)
+	{
+	case EWeaponState::EWS_Initial:
+		break;
+	case EWeaponState::EWS_Equipped:
+		ShowPickUpWidget(false);
+		GrabSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		break;
+	case EWeaponState::EWS_Dropped:
+		break;
+	case EWeaponState::EWS_MAX:
+		break;
+	}
+}
+
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
@@ -50,6 +69,13 @@ void AWeapon::BeginPlay()
 		GrabSphere->OnComponentBeginOverlap.AddDynamic(this, &ThisClass::OnGrabSphereBeginOverlap);
 		GrabSphere->OnComponentEndOverlap.AddDynamic(this, &ThisClass::OnGrabSphereEndOverlap);
 	}
+}
+
+void AWeapon::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ThisClass, WeaponState);
 }
 
 void AWeapon::OnGrabSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -70,4 +96,20 @@ void AWeapon::OnGrabSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, A
 	{
 		TPSCharacter->SetOverlappingWeapon(nullptr);
 	}
+}
+
+void AWeapon::OnRep_WeaponState()
+{
+	switch(WeaponState) {
+	case EWeaponState::EWS_Initial:
+		break;
+	case EWeaponState::EWS_Equipped:
+		ShowPickUpWidget(false);
+		break;
+	case EWeaponState::EWS_Dropped:
+		break;
+	case EWeaponState::EWS_MAX:
+		break;
+	}
+
 }

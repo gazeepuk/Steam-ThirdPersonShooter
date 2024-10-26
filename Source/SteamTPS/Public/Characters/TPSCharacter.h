@@ -31,7 +31,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
+	virtual void PostInitializeComponents() override;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	TObjectPtr<USpringArmComponent> SpringArmComponent;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
@@ -81,4 +82,7 @@ public:
 private:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UCombatComponent> CombatComponent;
+
+	UFUNCTION(Server, Reliable)
+	void Server_EquipWeapon();
 };
