@@ -41,4 +41,6 @@ protected:
 	bool bShouldMove = false;
 	UPROPERTY(BlueprintReadOnly, Category = "Movement Data")
 	bool bCrouching = false;
+	UPROPERTY(BlueprintReadOnly, Category = "Movement Data")
+	bool bWeaponEquipped = false;
 };

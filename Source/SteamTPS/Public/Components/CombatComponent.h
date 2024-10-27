@@ -17,9 +17,11 @@ class STEAMTPS_API UCombatComponent : public UActorComponent
 
 public:
 	UCombatComponent();
-
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
 	void EquipWeapon(AWeapon* WeaponToEquip);
 private:
+	UPROPERTY(Replicated)
 	TObjectPtr<AWeapon> EquippedWeapon;	
 	TObjectPtr<ATPSCharacter> TPSCharacter;
 };

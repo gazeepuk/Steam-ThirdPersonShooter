@@ -8,6 +8,7 @@
 #include "Weapons/Weapon.h"
 #include "TPSCharacter.generated.h"
 
+class UTPSAnimInstance;
 class UCombatComponent;
 class AWeapon;
 class UWidgetComponent;
@@ -40,6 +41,18 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UWidgetComponent> OverheadNameWidget;
 
+	//~Animations
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "Animations")
+	TSubclassOf<UTPSAnimInstance> UnequippedAnimInstanceClass;
+	UPROPERTY(EditDefaultsOnly, Category = "Animations")
+	TSubclassOf<UTPSAnimInstance> ArmedAnimInstanceClass;
+public:
+	UFUNCTION(Server, Reliable)
+	void Server_UpdateAnimInstanceClass(bool bArmed);
+	UFUNCTION(NetMulticast, Reliable)
+	void NetMulticast_UpdateAnimInstanceClass(TSubclassOf<UTPSAnimInstance> NewAnimInstanceClass);
+	
 	// ~Input
 public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
@@ -77,7 +90,8 @@ private:
 	void OnRep_OverlappingWeapon(AWeapon* OldWeapon);
 public:
 	FORCEINLINE void SetOverlappingWeapon(AWeapon* Weapon);
-
+	bool IsWeaponEquipped() const;
+	
 	// ~Combat
 private:
 	UPROPERTY(VisibleAnywhere)

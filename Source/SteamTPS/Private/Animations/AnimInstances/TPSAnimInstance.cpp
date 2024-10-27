@@ -28,5 +28,5 @@ void UTPSAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	bCrouching = CharacterMovementComponent && CharacterMovementComponent->IsCrouching();
 	bAccelerating = CharacterMovementComponent && CharacterMovementComponent->GetCurrentAcceleration().Size() > 0;
 	bShouldMove = bAccelerating && GroundSpeed > 3.f;
-	
+	bWeaponEquipped = TPSCharacter && TPSCharacter->IsWeaponEquipped();
 }

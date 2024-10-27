@@ -6,6 +6,7 @@
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputComponent.h"
+#include "Animations/AnimInstances/TPSAnimInstance.h"
 #include "Components/CombatComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -36,6 +37,21 @@ ATPSCharacter::ATPSCharacter()
 
 	CombatComponent = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	CombatComponent->SetIsReplicated(true);
+
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+}
+
+
+void ATPSCharacter::Server_UpdateAnimInstanceClass_Implementation(bool bArmed)
+{
+	const TSubclassOf<UTPSAnimInstance> NewAnimInstanceClass = bArmed ? ArmedAnimInstanceClass : UnequippedAnimInstanceClass;
+
+	NetMulticast_UpdateAnimInstanceClass(NewAnimInstanceClass);
+}
+
+void ATPSCharacter::NetMulticast_UpdateAnimInstanceClass_Implementation(TSubclassOf<UTPSAnimInstance> NewAnimInstanceClass)
+{
+	GetMesh()->SetAnimInstanceClass(NewAnimInstanceClass);	
 }
 
 // Called to bind functionality to input
@@ -166,7 +182,14 @@ void ATPSCharacter::UnCrouchInput(const FInputActionValue& Value)
 
 void ATPSCharacter::EquipInput(const FInputActionValue& Value)
 {
-	Server_EquipWeapon();
+	if(HasAuthority() && CombatComponent)
+	{
+		CombatComponent->EquipWeapon(OverlappingWeapon);
+	}
+	else
+	{
+		Server_EquipWeapon();
+	}
 }
 
 #pragma endregion
@@ -203,6 +226,11 @@ void ATPSCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 			OverlappingWeapon->ShowPickUpWidget(true);
 		}
 	}
+}
+
+bool ATPSCharacter::IsWeaponEquipped() const
+{
+	return CombatComponent && CombatComponent->EquippedWeapon;
 }
 
 void ATPSCharacter::Server_EquipWeapon_Implementation()

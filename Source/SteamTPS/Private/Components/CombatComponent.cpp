@@ -4,11 +4,18 @@
 #include "Characters/TPSCharacter.h"
 #include "Components/SphereComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
+#include "Net/UnrealNetwork.h"
 #include "Weapons/Weapon.h"
 
 UCombatComponent::UCombatComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+}
+
+void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(ThisClass, EquippedWeapon);
 }
 
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
@@ -25,6 +32,8 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 				EquippedWeapon = WeaponToEquip;
 				EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
 				EquippedWeapon->SetOwner(TPSCharacter);
+
+				TPSCharacter->Server_UpdateAnimInstanceClass(true);
 			}
 		}
 	}
