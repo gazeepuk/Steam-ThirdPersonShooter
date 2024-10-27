@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "InputActionValue.h"
+#include "Components/CombatComponent.h"
 #include "GameFramework/Character.h"
 #include "Weapons/Weapon.h"
 #include "TPSCharacter.generated.h"
@@ -62,16 +63,18 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Input|InputAction")
 	TObjectPtr<UInputMappingContext> DefaultMappingContext;
 	//Input actions
-	UPROPERTY(EditDefaultsOnly, Category = "Input|InputAction")
+	UPROPERTY(EditDefaultsOnly, Category = "Input|InputAction|Movement")
 	TObjectPtr<UInputAction> MoveAction;
-	UPROPERTY(EditDefaultsOnly, Category = "Input|InputAction")
+	UPROPERTY(EditDefaultsOnly, Category = "Input|InputAction|Movement")
 	TObjectPtr<UInputAction> LookAction;
-	UPROPERTY(EditDefaultsOnly, Category = "Input|InputAction")
+	UPROPERTY(EditDefaultsOnly, Category = "Input|InputAction|Movement")
 	TObjectPtr<UInputAction> JumpAction;
-	UPROPERTY(EditDefaultsOnly, Category = "Input|InputAction")
+	UPROPERTY(EditDefaultsOnly, Category = "Input|InputAction|Movement")
 	TObjectPtr<UInputAction> CrouchAction;
-	UPROPERTY(EditDefaultsOnly, Category = "Input|InputAction")
+	UPROPERTY(EditDefaultsOnly, Category = "Input|InputAction|Combat")
 	TObjectPtr<UInputAction> EquipAction;
+	UPROPERTY(EditDefaultsOnly, Category = "Input|InputAction|Combat")
+	TObjectPtr<UInputAction> AimAction;
 	
 	//Functions called for input
 	virtual void Move(const FInputActionValue& Value);
@@ -80,6 +83,8 @@ private:
 	virtual void CrouchInput(const FInputActionValue& Value);
 	virtual void UnCrouchInput(const FInputActionValue& Value);
 	virtual void EquipInput(const FInputActionValue& Value);
+	virtual void StartAimInput(const FInputActionValue& Value);
+	virtual void StopAimInput(const FInputActionValue& Value);
 
 	// ~Weapon
 private:
@@ -91,12 +96,18 @@ private:
 public:
 	FORCEINLINE void SetOverlappingWeapon(AWeapon* Weapon);
 	bool IsWeaponEquipped() const;
+	bool IsAiming() const;
 	
 	// ~Combat
 private:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UCombatComponent> CombatComponent;
-
+	
 	UFUNCTION(Server, Reliable)
 	void Server_EquipWeapon();
 };
+
+inline bool ATPSCharacter::IsAiming() const
+{
+	return CombatComponent && CombatComponent->bAiming;
+}

@@ -20,8 +20,19 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
 	void EquipWeapon(AWeapon* WeaponToEquip);
+
+protected:
+	void SetIsAiming(bool bNewAiming);
+	UFUNCTION(Server, Reliable)
+	void Server_SetAiming(bool bNewAiming);
+
+	UFUNCTION()
+	void OnRep_EquippedWeapon();
 private:
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
 	TObjectPtr<AWeapon> EquippedWeapon;	
 	TObjectPtr<ATPSCharacter> TPSCharacter;
+
+	UPROPERTY(Replicated)
+	bool bAiming = false;
 };

@@ -83,6 +83,11 @@ void ATPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 		{
 			EnhancedInputComponent->BindAction(EquipAction, ETriggerEvent::Started, this, &ThisClass::EquipInput);
 		}
+		if(IsValid(AimAction))
+		{
+			EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &ThisClass::StartAimInput);
+			EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &ThisClass::StopAimInput);
+		}
 	}
 }
 
@@ -172,7 +177,10 @@ void ATPSCharacter::StartJumpInput(const FInputActionValue& Value)
 
 void ATPSCharacter::CrouchInput(const FInputActionValue& Value)
 {
-	Crouch();
+	if(GetCharacterMovement() && !GetCharacterMovement()->IsFalling())
+	{
+		Crouch();
+	}
 }
 
 void ATPSCharacter::UnCrouchInput(const FInputActionValue& Value)
@@ -182,13 +190,22 @@ void ATPSCharacter::UnCrouchInput(const FInputActionValue& Value)
 
 void ATPSCharacter::EquipInput(const FInputActionValue& Value)
 {
-	if(HasAuthority() && CombatComponent)
+	Server_EquipWeapon();
+}
+
+void ATPSCharacter::StartAimInput(const FInputActionValue& Value)
+{
+	if(CombatComponent)
 	{
-		CombatComponent->EquipWeapon(OverlappingWeapon);
+		CombatComponent->SetIsAiming(true);
 	}
-	else
+}
+
+void ATPSCharacter::StopAimInput(const FInputActionValue& Value)
+{
+	if(CombatComponent)
 	{
-		Server_EquipWeapon();
+		CombatComponent->SetIsAiming(false);
 	}
 }
 

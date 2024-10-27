@@ -42,5 +42,16 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Movement Data")
 	bool bCrouching = false;
 	UPROPERTY(BlueprintReadOnly, Category = "Movement Data")
+	float YawOffset = 0.f;
+	UPROPERTY(BlueprintReadOnly, Category = "Movement Data")
+	float Lean = 0.f;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Combat Data")
 	bool bWeaponEquipped = false;
+	UPROPERTY(BlueprintReadOnly, Category = "Combat Data")
+	bool bAiming = false;
+
+	FRotator CharacterRotationLastFrame; 
+	FRotator CharacterRotation; 
+	FRotator DeltaRotation; 
 };

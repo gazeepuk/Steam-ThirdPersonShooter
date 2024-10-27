@@ -4,6 +4,7 @@
 #include "Characters/TPSCharacter.h"
 #include "Components/SphereComponent.h"
 #include "Engine/SkeletalMeshSocket.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Weapons/Weapon.h"
 
@@ -16,6 +17,7 @@ void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ThisClass, EquippedWeapon);
+	DOREPLIFETIME(ThisClass, bAiming);
 }
 
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
@@ -34,7 +36,29 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 				EquippedWeapon->SetOwner(TPSCharacter);
 
 				TPSCharacter->Server_UpdateAnimInstanceClass(true);
+				TPSCharacter->GetCharacterMovement()->bOrientRotationToMovement = false;
+				TPSCharacter->bUseControllerRotationYaw = true;
 			}
 		}
 	}
+}
+
+void UCombatComponent::SetIsAiming(bool bNewAiming)
+{
+	bAiming = bNewAiming;
+	Server_SetAiming(bNewAiming);
+}
+
+void UCombatComponent::OnRep_EquippedWeapon()
+{
+	if(EquippedWeapon && TPSCharacter)
+	{
+		TPSCharacter->GetCharacterMovement()->bOrientRotationToMovement = false;
+		TPSCharacter->bUseControllerRotationYaw = true;
+	}
+}
+
+void UCombatComponent::Server_SetAiming_Implementation(bool bNewAiming)
+{
+	bAiming = bNewAiming;
 }
