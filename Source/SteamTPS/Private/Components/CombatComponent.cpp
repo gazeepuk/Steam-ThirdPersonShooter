@@ -43,6 +43,16 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	}
 }
 
+void UCombatComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if(UCharacterMovementComponent* CharacterMovementComponent = TPSCharacter ? TPSCharacter->GetCharacterMovement() : nullptr)
+	{
+		CharacterMovementComponent->MaxWalkSpeed = BaseWalkSpeed;
+	}
+}
+
 void UCombatComponent::SetIsAiming(bool bNewAiming)
 {
 	bAiming = bNewAiming;
@@ -61,4 +71,8 @@ void UCombatComponent::OnRep_EquippedWeapon()
 void UCombatComponent::Server_SetAiming_Implementation(bool bNewAiming)
 {
 	bAiming = bNewAiming;
+	if(UCharacterMovementComponent* CharacterMovementComponent = TPSCharacter ? TPSCharacter->GetCharacterMovement() : nullptr)
+	{
+		CharacterMovementComponent->MaxWalkSpeed = bAiming ? AimWalkSpeed : BaseWalkSpeed;
+	}
 }
