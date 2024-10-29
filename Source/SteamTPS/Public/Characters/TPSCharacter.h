@@ -41,7 +41,8 @@ protected:
 	TObjectPtr<UCameraComponent> CameraComponent;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TObjectPtr<UWidgetComponent> OverheadNameWidget;
-
+private:
+	virtual void Tick(float DeltaSeconds) override;
 	//~Animations
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Animations")
@@ -105,9 +106,14 @@ private:
 	
 	UFUNCTION(Server, Reliable)
 	void Server_EquipWeapon();
-};
 
-inline bool ATPSCharacter::IsAiming() const
-{
-	return CombatComponent && CombatComponent->bAiming;
-}
+	// ~AimOffset
+	void CalculateAimOffset(float DeltaTime);
+
+	float AO_Yaw;
+	float AO_Pitch;
+	FRotator StartingAimRotation;
+public:
+	FORCEINLINE float Get_AO_Yaw() const {return AO_Yaw;}
+	FORCEINLINE float Get_AO_Pitch() const {return AO_Pitch;}
+};

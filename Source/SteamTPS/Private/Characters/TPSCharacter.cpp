@@ -12,6 +12,7 @@
 #include "Components/WidgetComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerState.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
 #include "UI/DisplayTextWidget.h"
 #include "Weapons/Weapon.h"
@@ -19,7 +20,7 @@
 // Sets default values
 ATPSCharacter::ATPSCharacter()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	SpringArmComponent->SetupAttachment(GetRootComponent());
@@ -123,6 +124,12 @@ void ATPSCharacter::PostInitializeComponents()
 	{
 		CombatComponent->TPSCharacter = this;
 	}
+}
+
+void ATPSCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	CalculateAimOffset(DeltaSeconds);
 }
 
 void ATPSCharacter::SetOverheadPlayerName()
@@ -252,6 +259,46 @@ void ATPSCharacter::SetOverlappingWeapon(AWeapon* Weapon)
 bool ATPSCharacter::IsWeaponEquipped() const
 {
 	return CombatComponent && CombatComponent->EquippedWeapon;
+}
+
+bool ATPSCharacter::IsAiming() const
+{
+	return CombatComponent && CombatComponent->bAiming;
+}
+
+void ATPSCharacter::CalculateAimOffset(float DeltaTime)
+{
+	if(!CombatComponent || !CombatComponent->EquippedWeapon)
+	{
+		return;
+	}
+
+	bool bFalling = GetCharacterMovement() && GetCharacterMovement()->IsFalling();
+	float GroundSpeed = GetVelocity().Size2D();
+	
+	//Calculating Yaw for AimOffset
+	if(GroundSpeed == 0.f && !bFalling)
+	{
+		FRotator CurrentAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		FRotator DeltaAimRotation = UKismetMathLibrary::NormalizedDeltaRotator(CurrentAimRotation, StartingAimRotation);
+		AO_Yaw = DeltaAimRotation.Yaw;
+		bUseControllerRotationYaw = false;
+	}
+	else if(GroundSpeed > 0.f || bFalling)
+	{
+		StartingAimRotation = FRotator(0.f, GetBaseAimRotation().Yaw, 0.f);
+		AO_Yaw = 0.f;
+		bUseControllerRotationYaw = IsWeaponEquipped();
+	}
+	//Calculating Pitch for AimOffset
+	AO_Pitch = GetBaseAimRotation().Pitch;
+	//Mapping pitch from [270; 360) to [-90; 0)
+	if(AO_Pitch > 90 && !IsLocallyControlled())
+	{
+		FVector2D InRange(270.f, 360.f);
+		FVector2D OutRange(-90.f, 0.f);
+		AO_Pitch = FMath::GetMappedRangeValueClamped(InRange, OutRange, AO_Pitch);
+	}
 }
 
 void ATPSCharacter::Server_EquipWeapon_Implementation()

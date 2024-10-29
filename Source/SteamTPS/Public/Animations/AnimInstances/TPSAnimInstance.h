@@ -51,7 +51,12 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Combat Data")
 	bool bAiming = false;
 
+	UPROPERTY(BlueprintReadOnly, Category = "AimOffset Data")
+	float AO_Yaw;
+	UPROPERTY(BlueprintReadOnly, Category = "AimOffset Data")
+	float AO_Pitch;	
+
 	FRotator CharacterRotationLastFrame; 
 	FRotator CharacterRotation; 
-	FRotator DeltaRotation; 
+	FRotator DeltaRotation;
 };
